@@ -1,9 +1,20 @@
 package main
 
 import (
+	"flag"
+	"github.com/grugrut/n-queen/internal/bitboard"
 	"github.com/grugrut/n-queen/internal/naive"
 )
 
 func main() {
-	naive.Solve(10)
+	solver := flag.String("solver", "naive", "solver")
+	size := flag.Int("n", 8, "board size")
+
+	flag.Parse()
+
+	if *solver == "bitboard" {
+		bitboard.Solve(*size)
+	} else {
+		naive.Solve(*size)
+	}
 }
