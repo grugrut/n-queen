@@ -2,6 +2,7 @@ package bitboard
 
 import (
 	"fmt"
+	"math"
 )
 
 var result int
@@ -11,7 +12,15 @@ func Solve(N int) {
 		fmt.Println("Now version, specify N <= 8")
 		return
 	}
-	backtrack(0)
+	var checked uint64
+	for i := 0; i < N; i++ {
+		checked = (checked << 8) | (uint64(math.Pow(2, float64(8-N)) - 1))
+	}
+	for i := N; i < 8; i++ {
+		checked = (checked << 8) | 0xff
+	}
+
+	backtrack(N, 0, checked)
 	fmt.Println(result)
 }
 
@@ -19,8 +28,20 @@ func check() bool {
 	return true
 }
 
-func backtrack(q uint64) {
-
+func backtrack(N int, q uint64, checked uint64) {
+	for {
+		b := (getPlacableCell(q) & ^checked)
+		if b == 0 {
+			if countBit(q) == N {
+				fmt.Printf("%064b OK\n", q)
+				result++
+			}
+			return
+		}
+		next := (b & -b)
+		checked |= next
+		backtrack(N, q|next, checked)
+	}
 }
 
 func countBit(i uint64) int {
@@ -87,56 +108,6 @@ func getPlacableCell(q uint64) uint64 {
 	temp |= (temp & sheild) << 7
 	b |= temp
 
-	// right
-	sheild = 0xfefefefefefefefe
-	temp = q
-	temp |= (temp & sheild) >> 1
-	temp |= (temp & sheild) >> 1
-	temp |= (temp & sheild) >> 1
-	temp |= (temp & sheild) >> 1
-	temp |= (temp & sheild) >> 1
-	temp |= (temp & sheild) >> 1
-	temp |= (temp & sheild) >> 1
-	b |= temp
-
-	// down right
-	sheild = 0xfefefefefefefefe
-	temp = q
-	temp |= (temp & sheild) >> 9
-	temp |= (temp & sheild) >> 9
-	temp |= (temp & sheild) >> 9
-	temp |= (temp & sheild) >> 9
-	temp |= (temp & sheild) >> 9
-	temp |= (temp & sheild) >> 9
-	temp |= (temp & sheild) >> 9
-	b |= temp
-
-	// down
-	sheild = 0xffffffffffffffff
-	temp = q
-	temp |= (temp & sheild) >> 8
-	temp |= (temp & sheild) >> 8
-	temp |= (temp & sheild) >> 8
-	temp |= (temp & sheild) >> 8
-	temp |= (temp & sheild) >> 8
-	temp |= (temp & sheild) >> 8
-	temp |= (temp & sheild) >> 8
-	b |= temp
-
-	// down left
-	// down right
-	sheild = 0x7f7f7f7f7f7f7f7f
-	temp = q
-	temp |= (temp & sheild) >> 7
-	temp |= (temp & sheild) >> 7
-	temp |= (temp & sheild) >> 7
-	temp |= (temp & sheild) >> 7
-	temp |= (temp & sheild) >> 7
-	temp |= (temp & sheild) >> 7
-	temp |= (temp & sheild) >> 7
-	b |= temp
-
 	b = ^b
-	fmt.Printf("%064b\n", b)
 	return b
 }
