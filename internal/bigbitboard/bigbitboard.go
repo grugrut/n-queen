@@ -23,8 +23,9 @@ func Solve(N int) {
 			}
 		}
 	}
+
 	var q [4]uint64
-	backtrack(N, &q, &checked)
+	backtrack(N, q, checked)
 	fmt.Println(result)
 }
 
@@ -32,25 +33,40 @@ func check() bool {
 	return true
 }
 
-func backtrack(N int, q *[4]uint64, checked *[4]uint64) {
-	/*
-		for {
-			b := (getPlacableCell(q) & ^checked)
-			if b == 0 {
-				if countBit(q) == N {
-					fmt.Printf("%064b OK\n", q)
-					result++
-				}
-				return
+func backtrack(N int, q [4]uint64, checked [4]uint64) {
+	for {
+		bflag := true
+		temp := getPlacableCell(q)
+		var b [4]uint64
+
+		var i int
+		for i = 3; i >= 0; i-- {
+			b[i] = temp[i] & ^checked[i]
+			if b[i] != 0 {
+				bflag = false
+				break
 			}
-			next := (b & -b)
-			checked |= next
-			backtrack(N, q|next, checked)
 		}
-	*/
+
+		if bflag {
+			if countBit(q) == N {
+				for i := 0; i < 4; i++ {
+					fmt.Printf("%d: %064b OK\n", i, q[i])
+				}
+				result++
+			}
+			return
+		} else {
+			next := (b[i] & -b[i])
+			checked[i] |= next
+			qq := q
+			qq[i] |= next
+			backtrack(N, qq, checked)
+		}
+	}
 }
 
-func countBit(q *[4]uint64) int {
+func countBit(q [4]uint64) int {
 	result := 0
 	for n := 0; n < 4; n++ {
 		i := q[n]
@@ -66,7 +82,7 @@ func countBit(q *[4]uint64) int {
 	return result
 }
 
-func getPlacableCell(q *[4]uint64) [4]uint64 {
+func getPlacableCell(q [4]uint64) [4]uint64 {
 	var b [4]uint64
 
 	var temp [4]uint64
